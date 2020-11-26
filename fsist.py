@@ -83,7 +83,7 @@ class FSistApi(Browser):
 
         :param xml_file: Caminho do arquivo xml.
         :param soup_cnf: Define o uso ou não de Beaultifulsoup.
-        :return: Retorna o códigp-fonte da página ou False, caso não encontre o pdf.
+        :return: Retorna o código-fonte da página ou False, caso não encontre o pdf.
         """
         self.headers.pop('Content-Type', None)
         params = {

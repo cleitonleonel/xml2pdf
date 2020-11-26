@@ -63,7 +63,7 @@ class WebDanfeApi(Browser):
         Faz o envio do xml para o site https://www.webdanfe.com.br/.
 
         :param xml_file: Caminho do arquivo xml.
-        :return: Retorna o códigp-fonte da página ou False, caso não encontre o pdf.
+        :return: Retorna os bytes do arquivo ou False, caso não encontre o pdf.
         """
         self.headers.pop('Content-Type', None)
 
@@ -80,7 +80,7 @@ class WebDanfeApi(Browser):
         Faz uma busca pelo xml referente via site https://www.webdanfe.com.br/.
 
         :param key: Chave da nota.
-        :return: .
+        :return: Retorna o conteúdo do objeto.
         """
         self.headers.pop('Content-Type', None)
 
@@ -121,4 +121,4 @@ if __name__ == "__main__":
     wd = WebDanfeApi()
     response = wd.upload_xml('docs/35080599999090910270550010000000015180051273-nfe.xml')
     download = wd.get_pdf(response)
-    # gera_xml = wd.generate_xml(key='32201034971421000181650010000014191914100001')
+    # gera_xml = wd.generate_xml(key='32201034971421000181650010000014191914100001') #  Está obsoleta...
