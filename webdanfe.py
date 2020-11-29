@@ -119,6 +119,6 @@ class WebDanfeApi(Browser):
 
 if __name__ == "__main__":
     wd = WebDanfeApi()
-    response = wd.upload_xml('docs/35080599999090910270550010000000015180051273-nfe.xml')
+    response = wd.upload_xml('docs/32201034971421000181650010000014191914100001-nfce.xml')
     download = wd.get_pdf(response)
     # gera_xml = wd.generate_xml(key='32201034971421000181650010000014191914100001') #  Está obsoleta...
