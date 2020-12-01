@@ -378,9 +378,9 @@ html = """<!DOCTYPE html>
       </table>
 
       <table class="descQt">
-        <tr>
-          <td>Itens unitários<span class="td-text-right">%(qtd_unit_itens)s</span></td>
-        </tr>
+        <!--<tr>
+          <td>Itens unitários<span class="td-text-right">[(qtd_unit_itens)]</span></td>
+        </tr>-->
         <tr>
           <td>Qtde total de itens <span class="td-text-right">%(qtd_itens)s</span></td>
         </tr>
