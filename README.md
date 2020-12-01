@@ -14,5 +14,5 @@ fs.get_pdf()
 *Cli method and local run:*
 
 ```
-python3 conversor.py docs/35080599999090910270550010000000015180051273-nfe.xml
+python3 conversor.py docs/32201034971421000181650010000014191914100001-nfce.xml
 ```
