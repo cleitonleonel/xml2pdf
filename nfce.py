@@ -377,7 +377,7 @@ html = """<!DOCTYPE html>
         %(table_items)s
       </table>
 
-      <table class="descQt">
+      <table class="descQt" style="border-bottom: 1px solid #000;">
         <!--<tr>
           <td>Itens unitários<span class="td-text-right">[(qtd_unit_itens)]</span></td>
         </tr>-->
@@ -398,18 +398,15 @@ html = """<!DOCTYPE html>
         </tr>
       </table>
 
-      <table class="valuePayment">
+      <table class="valuePayment" style="border-bottom: 1px solid #000;">
         <tr>
           <td>FORMA PGTO. <span class="td-text-right">VALOR PAGO R$</span></td>
         </tr>
-        <tr>
-          <td class="last">
-            %(payment_forms)s<span class="td-text-right">%(payment_return_forms)s</span>
-          </td>
-        </tr>
+        %(payments)s
+
       </table>
 
-      <table class="postTax">
+      <table class="postTax" style="border-bottom: 1px solid #000;">
         <tr>
           <td><span id="url_consulta" class="text">Consulte pela Chave de Acesso em <br><a style="color: blue" href="">%(url_sefaz)s</a></span></td>
         </tr>

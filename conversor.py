@@ -24,7 +24,8 @@ class Template(object):
         self.data = data
         self.itens_total = None
 
-    def logo(self):
+    @staticmethod
+    def logo():
         return f'{BASE_DIR}/images/nf-e-nota-fiscal-eletronica.png'
 
     def emit(self):
@@ -62,27 +63,25 @@ class Template(object):
         return self.data["nfeProc"]["NFe"]["infNFeSupl"]
 
     def payments(self):
-        return self.data["nfeProc"]["NFe"]["infNFe"]["pag"]["detPag"]
+        return self.data["nfeProc"]["NFe"]["infNFe"]["pag"]
 
     def additional_info(self):
         return self.data["nfeProc"]["NFe"]["infNFe"]["infAdic"]
 
-    def footer(self):
+    @staticmethod
+    def footer():
         return {}
 
-    def mount_dict(self, item):
-        dict_itens = {}
-        dict_itens['code'] = item['prod']['cProd']
-        dict_itens['description'] = item['prod']['xProd']
-        dict_itens['quantity'] = item['prod']['qCom']
-        dict_itens['unity'] = item['prod']['uCom']
-        dict_itens['price'] = item['prod']['vUnTrib']
-        dict_itens['total_price'] = item['prod']['vProd']
+    @staticmethod
+    def mount_dict(item):
+        dict_itens = {'code': item['prod']['cProd'], 'description': item['prod']['xProd'],
+                      'quantity': item['prod']['qCom'], 'unity': item['prod']['uCom'], 'price': item['prod']['vUnTrib'],
+                      'total_price': item['prod']['vProd']}
         return dict_itens
 
 
-def get_data(file_path):
-    with open(file_path, 'rb') as xml:
+def get_data(filepath):
+    with open(filepath, 'rb') as xml:
         data = json.dumps(xmltodict.parse(xml))
     return json.loads(data)
 
@@ -106,10 +105,97 @@ def mount_table(itens):
     return ''.join(new_itens)
 
 
+def get_card(banner):
+    cards = {
+        '01': 'Visa',
+        '02': 'MasterCard',
+        '03': 'American Express',
+        '04': 'SoroCred',
+        '05': 'Diners',
+        '06': 'Elo',
+        '07': 'HiperCard',
+        '08': 'Aura',
+        '09': 'Cabal',
+        '10': 'Alelo',
+        '11': 'BanesCard',
+        '12': 'CalCard',
+        '13': 'CredZ',
+        '14': 'Discover',
+        '15': 'GoodCard',
+        '16': 'Gre3nCard',
+        '17': 'Hiper',
+        '18': 'JcB',
+        '19': 'Mais',
+        '20': 'MaxVan',
+        '21': 'PoliCard',
+        '22': 'RedeCompras',
+        '23': 'Sodexo',
+        '24': 'ValeCard',
+        '25': 'VeroCheque',
+        '26': 'VR',
+        '27': 'Ticket',
+        '99': 'Outros'
+    }
+
+    return cards.get(banner, 'Outros')
+
+
+def get_payment_type(pay):
+    payments_type = {
+        '01': 'Dinheiro',
+        '02': 'Cheque',
+        '03': 'Cartão de Crédito',
+        '04': 'Cartão de Débito',
+        '05': 'Crédito Loja',
+        '10': 'Vale Alimentação',
+        '11': 'Vale Refeição',
+        '12': 'Vale Presente',
+        '13': 'Vale Combustível',
+        '15': 'Boleto Bancário',
+        '16': 'Deposito Bancário',
+        '17': 'PIX',
+        '18': 'Transf/Cart.Digital',
+        '19': 'Crédito Virtual'
+    }
+
+    return payments_type.get(pay, 'Outros')
+
+
+def get_payments(payments):
+    new_payments = []
+
+    table_payments = """
+        <tr>
+            <td class="last">
+                %(payment_forms)s
+            </td>
+        </tr>               
+    """
+
+    for payment in payments["detPag"]:
+        if "card" in payment:
+            html_str = f'{get_payment_type(payment["tPag"])} {get_card(payment["card"]["tBand"])}<span class="td-text' \
+                       f'-right">{payment["vPag"]}</span> '
+        else:
+            html_str = f'{get_payment_type(payment["tPag"])}<span class="td-text-right">{payment["vPag"]}</span>'
+        new_payments.append(table_payments % {'payment_forms': html_str})
+
+    payment_change = ""
+    if payments["vTroco"] != '0,00':
+        payment_change = f"""
+        <tr>
+            <td class="last">
+                TROCO :<span class="td-text-right">{payments["vTroco"]}</span>
+            </td>
+        </tr>
+        """
+
+    return ''.join(new_payments) + payment_change
+
+
 def initialize(filename=None):
     dict_data = get_data(filename)
     result = False
-    #print(dict_data)
 
     tp = Template(dict_data)
 
@@ -126,40 +212,20 @@ def initialize(filename=None):
 
     file_name = tp.info_nfe()["chNFe"]
 
-    """
-    items = [
-        {
-            "code": '00002',
-            "description": 'produto teste',
-            "quantity": '1',
-            "unity": 'PC',
-            "price": '10.00',
-            "total_price": '10.00'
-        },
-        {
-            "code": '00003',
-            "description": 'produto teste2',
-            "quantity": '2',
-            "unity": 'KG',
-            "price": '13.00',
-            "total_price": '26.00'
-        }
-    ]    """
-
     url_logo = f'{BASE_DIR}/images/nf-e-nota-fiscal-eletronica.png'
-    payment_type = "Dinheiro" if tp.payments()["tPag"] == "01" else "Crédito"
+    payments = tp.payments()
 
     dict_details = {"url_logo": url_logo,
                     "nl_company_cnpj_cpf": tp.emit()["CNPJ"],
                     "ds_company_issuer_name": tp.emit()["xNome"],
-                    "ds_company_complement": tp.emit()["enderEmit"]["xCpl"],
+                    "ds_company_complement": tp.emit()["enderEmit"].get("xCpl", ""),
                     "ds_company_address": tp.emit()["enderEmit"]["xLgr"],
                     "ds_company_neighborhood": tp.emit()["enderEmit"]["xBairro"],
-                    "ds_company_number": tp.emit()["enderEmit"]["nro"],
+                    "ds_company_number": tp.emit()["enderEmit"].get("nro", ""),
                     "ds_company_city_name": tp.emit()["enderEmit"]["xMun"],
                     "ds_company_uf": tp.emit()["enderEmit"]["UF"],
                     "ds_company_zip_code": tp.emit()["enderEmit"]["CEP"],
-                    "ds_company_fone": tp.emit()["enderEmit"]["fone"],
+                    "ds_company_fone": tp.emit()["enderEmit"].get("fone", ""),
                     "table_items": mount_table(tp.itens()),
                     # "qtd_unit_itens": dict_data["nfeProc"]["NFe"]["infNFe"]["det"]["prod"]["qCom"],
                     "qtd_itens": tp.itens_total,  # dict_data["nfeProc"]["NFe"]["infNFe"]["det"]["prod"]["indTot"],
@@ -167,8 +233,7 @@ def initialize(filename=None):
                     "vl_discount": tp.impost()["vDesc"],
                     "vl_shipping": tp.impost()["vFrete"],
                     "vl_total": tp.impost()["vNF"],
-                    "payment_forms": payment_type,
-                    "payment_return_forms": tp.payments()["vPag"],
+                    "payments": get_payments(payments),
                     "url_sefaz": tp.codes()["urlChave"],
                     "ds_danfe": '',
                     "consumer": '',
@@ -183,8 +248,6 @@ def initialize(filename=None):
                     "approximate_tax": '',
                     "additional_information": tp.additional_info()["infCpl"],
                     }
-
-    # print(dict_details)
 
     html_bytestring = html % dict_details
 
